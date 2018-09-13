@@ -1,0 +1,4 @@
+string command
+string args_json
+---
+string rval_json
