@@ -1,0 +1,13 @@
+<launch>
+
+    <node pkg="joy" name="joystick" type="joy_node" ns="autostep">
+        <param name="autorepeat_rate" value="100"/>
+    </node>
+
+    <node pkg="autostep_ros" name="autostep" type="autostep_node.py" ns="autostep">
+    </node>
+
+    <node pkg="autostep_ros" name="dynamic_model" type="dynamic_model_node.py" ns="autostep">
+    </node>
+
+</launch>
