@@ -22,12 +22,22 @@ class AutostepNode(object):
 
     def __init__(self,port='/dev/ttyACM0'):
 
-        self.port = port
-        self.step_mode = 'STEP_FS_128'
-        self.fullstep_per_rev = 200
-        self.gear_ratio = 2.0
+        ## Parameters
+        #self.port = port
+        #self.step_mode = 'STEP_FS_128'
+        #self.fullstep_per_rev = 200
+        #self.gear_ratio = 2.0
+        #self.tracking_mode_gain = 5.0
 
-        self.tracking_mode_gain = 5.0
+        # Parameters
+        self.port = rospy.get_param('port', '/dev/ttyACM0')
+        self.step_mode= rospy.get_param('step_mode', 'STEP_FS_128')
+        self.fullstep_per_rev = rospy.get_param('fullstep_per_rev', 200)
+        self.gear_ratio = rospy.get_param('gear_ratio', 2.0)
+        self.tracking_mode_gain = rospy.get_param('tracking_mode_gain', 5.0)
+        self.tracking_mode_absolute = rospy.get_param('tracking_mode_absolute', False)
+
+        # Tracking mode state data
         self.tracking_mode_is_first = False
         self.tracking_mode_first_update_t = 0.0
         self.tracking_mode_last_update_t = 0.0
@@ -44,21 +54,22 @@ class AutostepNode(object):
         self.tracking_sub = rospy.Subscriber('tracking_data', TrackingData, self.on_tracking_data_callback)
 
         self.command_srv_table = {
-                'run'                   : self.on_run_command,
-                'enable'                : self.on_enable_command,
-                'release'               : self.on_release_command,
-                'is_busy'               : self.on_is_busy_command,
-                'move_to'               : self.on_move_to_command,
-                'soft_stop'             : self.on_soft_stop_command,
-                'set_position'          : self.on_set_position_command,
-                'get_position'          : self.on_get_position_command,
-                'set_move_mode'         : self.on_set_move_mode_command,
-                'get_params'            : self.on_get_params_command,
-                'print_params'          : self.on_print_params_command,
-                'sinusoid'              : self.on_sinusoid_command,
-                'run_trajectory'        : self.on_run_trajectory_command,
-                'enable_tracking_mode'  : self.on_enable_tracking_mode_command,
-                'disable_tracking_mode' : self.on_disable_tracking_mode_command,
+                'run'                     : self.on_run_command,
+                'enable'                  : self.on_enable_command,
+                'release'                 : self.on_release_command,
+                'is_busy'                 : self.on_is_busy_command,
+                'move_to'                 : self.on_move_to_command,
+                'soft_stop'               : self.on_soft_stop_command,
+                'set_position'            : self.on_set_position_command,
+                'get_position'            : self.on_get_position_command,
+                'set_move_mode'           : self.on_set_move_mode_command,
+                'get_params'              : self.on_get_params_command,
+                'print_params'            : self.on_print_params_command,
+                'sinusoid'                : self.on_sinusoid_command,
+                'move_to_sinusoid_start'  : self.on_move_to_sinusiod_start_command,
+                'run_trajectory'          : self.on_run_trajectory_command,
+                'enable_tracking_mode'    : self.on_enable_tracking_mode_command,
+                'disable_tracking_mode'   : self.on_disable_tracking_mode_command,
                 }
         self.command_srv = rospy.Service('command', Command, self.command_srv_callback)
 
@@ -145,7 +156,13 @@ class AutostepNode(object):
 
     def on_is_busy_command(self,args_dict):
         is_busy = self.autostep.is_busy()
-        return {'success': True,'message': '','is_busy': is_busy}
+        rospy.logwarn('is_busy: {}'.format(is_busy))
+        rospy.logwarn('self.running_motion_cmd: {}'.format(self.running_motion_cmd))
+        rospy.logwarn('self.tracking_mode_enabled: {}'.format(self.tracking_mode_enabled))
+        if is_busy or self.running_motion_cmd or self.tracking_mode_enabled:
+            return {'success': True,'message': '','is_busy': True}
+        else:
+            return {'success': True,'message': '','is_busy': False}
 
     def on_get_position_command(self,args_dict):
         position = self.autostep.get_position()
@@ -172,6 +189,7 @@ class AutostepNode(object):
         param = {}
         resp_dict = {'message': ''}
         param_keys = ['amplitude', 'period', 'phase', 'offset', 'num_cycle']
+
         for key in param_keys:
             try:
                 param[key] = args_dict[key]
@@ -181,7 +199,6 @@ class AutostepNode(object):
                     resp_dict['message'] +=  ', '
                 resp_dict['message'] += '{} argument missing'.format(key)
         if ok:
-
             def motion_data_callback(elapsed_time, position, setpoint, sensor):
                 if not self.have_sensor:
                     sensor = 0.0
@@ -191,6 +208,8 @@ class AutostepNode(object):
 
             def motion_done_callback():
                 with self.lock:
+                    self.autostep.set_move_mode_to_jog()
+                    self.autostep.run(0.0)
                     self.running_motion_cmd = False 
 
             # Launch sinusoid in separate thread
@@ -199,7 +218,27 @@ class AutostepNode(object):
             with self.lock:
                 self.running_motion_cmd = True
             motion_thread.start()
+            resp_dict['success'] = True
+        else:
+            resp_dict['success'] = False
+        return resp_dict
 
+
+    def on_move_to_sinusiod_start_command(self,args_dict):
+        ok = True 
+        param = {}
+        resp_dict = {'message': ''}
+        param_keys = ['amplitude', 'period', 'phase', 'offset', 'num_cycle']
+        for key in param_keys:
+            try:
+                param[key] = args_dict[key]
+            except KeyError:
+                ok = False
+                if len(resp_dict['message']) > 0:
+                    resp_dict['message'] +=  ', '
+                resp_dict['message'] += '{} argument missing'.format(key)
+        if ok:
+            self.autostep.move_to_sinusiod_start(param)
             resp_dict['success'] = True
         else:
             resp_dict['success'] = False
@@ -267,10 +306,12 @@ class AutostepNode(object):
 
         def motion_done_callback():
             with self.lock:
+                self.autostep.set_move_mode_to_jog()
+                self.autostep.run(0.0)
                 self.running_motion_cmd = False
 
         # Launch sinusoid in separate thread 
-        thread_args = [t_done,position_func,velocity_func,False,motion_data_callback] 
+        thread_args = [t_done,position_func,velocity_func,False,motion_data_callback,motion_done_callback] 
         motion_thread = threading.Thread(target=self.autostep.run_trajectory,args=thread_args)
         with self.lock:
             self.running_motion_cmd = True
@@ -314,7 +355,10 @@ class AutostepNode(object):
                 update_dt = current_time - self.tracking_mode_last_update_t
 
                 predicted_position = self.tracking_mode_position + update_dt*self.tracking_mode_velocity
-                position_error = msg.position - (predicted_position - self.tracking_mode_position_start)
+                if self.tracking_mode_absolute:
+                    position_error = msg.position - predicted_position
+                else:
+                    position_error = msg.position - (predicted_position - self.tracking_mode_position_start)
 
                 new_velocity = self.tracking_mode_gain*position_error + msg.velocity
                 true_position = self.autostep.run_with_feedback(new_velocity)
