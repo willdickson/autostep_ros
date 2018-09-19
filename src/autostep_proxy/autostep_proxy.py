@@ -18,6 +18,7 @@ class AutostepProxyException(Exception):
 class AutostepProxy(object):
     
     TrajectoryDt = Autostep.TrajectoryDt
+    BusyWaitDt = 0.1
 
     def __init__(self, namespace='autostep'):
         self.namespace = namespace
@@ -62,6 +63,10 @@ class AutostepProxy(object):
         rsp_dict = self.send_command(command_name, command_args)
         self.check_rsp_dict(rsp_dict)
         return rsp_dict['is_busy']
+
+    def busy_wait(self):
+        while self.is_busy():
+            time.sleep(self.BusyWaitDt)
 
     def move_to(self,position):
         command_name = 'move_to'
@@ -116,13 +121,13 @@ class AutostepProxy(object):
         print()
 
     def sinusoid(self,param):
-        command_name = 'sinuoid'
+        command_name = 'sinusoid'
         command_args = param
         rsp_dict = self.send_command(command_name, command_args)
         self.check_rsp_dict(rsp_dict)
 
     def move_to_sinusoid_start(self,param):
-        command_name = 'move_to_sinuoid_start'
+        command_name = 'move_to_sinusoid_start'
         command_args = param
         rsp_dict = self.send_command(command_name, command_args)
         self.check_rsp_dict(rsp_dict)
@@ -142,7 +147,7 @@ class AutostepProxy(object):
     def disable_tracking_mode(self):
         command_name = 'disable_tracking_mode'
         command_args = None
-        rsp_dict = self.send_command(command_name, commmand_args)
+        rsp_dict = self.send_command(command_name, command_args)
         self.check_rsp_dict(rsp_dict)
     
     def check_rsp_dict(self,rsp_dict):

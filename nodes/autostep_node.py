@@ -67,7 +67,7 @@ class AutostepNode(object):
                 'get_params'              : self.on_get_params_command,
                 'print_params'            : self.on_print_params_command,
                 'sinusoid'                : self.on_sinusoid_command,
-                'move_to_sinusoid_start'  : self.on_move_to_sinusiod_start_command,
+                'move_to_sinusoid_start'  : self.on_move_to_sinusoid_start_command,
                 'run_trajectory'          : self.on_run_trajectory_command,
                 'enable_tracking_mode'    : self.on_enable_tracking_mode_command,
                 'disable_tracking_mode'   : self.on_disable_tracking_mode_command,
@@ -238,7 +238,7 @@ class AutostepNode(object):
         return rsp_dict
 
 
-    def on_move_to_sinusiod_start_command(self,args_dict):
+    def on_move_to_sinusoid_start_command(self,args_dict):
         ok = True 
         param = {}
         rsp_dict = {'message': ''}
@@ -252,7 +252,7 @@ class AutostepNode(object):
                     rsp_dict['message'] +=  ', '
                 rsp_dict['message'] += '{} argument missing'.format(key)
         if ok:
-            self.autostep.move_to_sinusiod_start(param)
+            self.autostep.move_to_sinusoid_start(param)
             rsp_dict['success'] = True
         else:
             rsp_dict['success'] = False
