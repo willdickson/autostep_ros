@@ -59,6 +59,7 @@ class AutostepNode(object):
                 'release'                 : self.on_release_command,
                 'is_busy'                 : self.on_is_busy_command,
                 'move_to'                 : self.on_move_to_command,
+                'move_by'                 : self.on_move_by_command,
                 'soft_stop'               : self.on_soft_stop_command,
                 'set_position'            : self.on_set_position_command,
                 'get_position'            : self.on_get_position_command,
@@ -104,27 +105,27 @@ class AutostepNode(object):
             command_method = self.command_srv_table[req.command]
             ok = True
         except KeyError:
-            resp_dict = {'success': False,'message':'unknown command'}
+            rsp_dict = {'success': False,'message':'unknown command'}
         if ok:
-            resp_dict = command_method(args_dict)
+            rsp_dict = command_method(args_dict)
 
-        return CommandResponse(json.dumps(resp_dict))
+        return CommandResponse(json.dumps(rsp_dict))
 
     def on_run_command(self,args_dict):
         ok = False
         velocity = 0.0
-        resp_dict = {}
+        rsp_dict = {}
         try:
             velocity = args_dict['velocity']
-            resp_dict['success'] = True
-            resp_dict['message'] = ''
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
             ok = True
         except KeyError:
-            resp_dict['success'] = False
-            resp_dict['message'] = 'velocity argument missing'
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'velocity argument missing'
         if ok:
             self.autostep.run(velocity)
-        return resp_dict
+        return rsp_dict
 
     def on_enable_command(self,args_dict):
         self.enable()
@@ -137,18 +138,34 @@ class AutostepNode(object):
     def on_move_to_command(self,args_dict):
         ok = False
         position = 0.0
-        resp_dict = {}
+        rsp_dict = {}
         try:
             position = args_dict['position']
-            resp_dict['success'] = True
-            resp_dict['message'] = ''
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
             ok = True
         except KeyError:
-            resp_dict['success'] = False
-            resp_dict['message'] = 'position argument missing'
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'position argument missing'
         if ok:
             self.autostep.move_to(position)
-        return resp_dict
+        return rsp_dict
+
+    def on_move_by_command(self, args_dict):
+        ok = False
+        position = 0.0
+        rsp_dict = {}
+        try:
+            step = args_dict['step']
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
+            ok = True
+        except KeyError:
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'step argument missing'
+        if ok:
+            self.autostep.move_by(step)
+        return rsp_dict
 
     def on_soft_stop_command(self,args_dict):
         self.autostep.soft_stop()
@@ -156,9 +173,6 @@ class AutostepNode(object):
 
     def on_is_busy_command(self,args_dict):
         is_busy = self.autostep.is_busy()
-        rospy.logwarn('is_busy: {}'.format(is_busy))
-        rospy.logwarn('self.running_motion_cmd: {}'.format(self.running_motion_cmd))
-        rospy.logwarn('self.tracking_mode_enabled: {}'.format(self.tracking_mode_enabled))
         if is_busy or self.running_motion_cmd or self.tracking_mode_enabled:
             return {'success': True,'message': '','is_busy': True}
         else:
@@ -171,23 +185,23 @@ class AutostepNode(object):
     def on_set_position_command(self,args_dict):
         ok = False
         position = 0.0
-        resp_dict = {}
+        rsp_dict = {}
         try:
             position = args_dict['position']
-            resp_dict['success'] = True
-            resp_dict['message'] = ''
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
             ok = True
         except KeyError:
-            resp_dict['success'] = False
-            resp_dict['message'] = 'position argument missing'
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'position argument missing'
         if ok:
             self.autostep.set_position(position)
-        return resp_dict
+        return rsp_dict
 
     def on_sinusoid_command(self,args_dict):
         ok = True 
         param = {}
-        resp_dict = {'message': ''}
+        rsp_dict = {'message': ''}
         param_keys = ['amplitude', 'period', 'phase', 'offset', 'num_cycle']
 
         for key in param_keys:
@@ -195,9 +209,9 @@ class AutostepNode(object):
                 param[key] = args_dict[key]
             except KeyError:
                 ok = False
-                if len(resp_dict['message']) > 0:
-                    resp_dict['message'] +=  ', '
-                resp_dict['message'] += '{} argument missing'.format(key)
+                if len(rsp_dict['message']) > 0:
+                    rsp_dict['message'] +=  ', '
+                rsp_dict['message'] += '{} argument missing'.format(key)
         if ok:
             def motion_data_callback(elapsed_time, position, setpoint, sensor):
                 if not self.have_sensor:
@@ -218,53 +232,53 @@ class AutostepNode(object):
             with self.lock:
                 self.running_motion_cmd = True
             motion_thread.start()
-            resp_dict['success'] = True
+            rsp_dict['success'] = True
         else:
-            resp_dict['success'] = False
-        return resp_dict
+            rsp_dict['success'] = False
+        return rsp_dict
 
 
     def on_move_to_sinusiod_start_command(self,args_dict):
         ok = True 
         param = {}
-        resp_dict = {'message': ''}
+        rsp_dict = {'message': ''}
         param_keys = ['amplitude', 'period', 'phase', 'offset', 'num_cycle']
         for key in param_keys:
             try:
                 param[key] = args_dict[key]
             except KeyError:
                 ok = False
-                if len(resp_dict['message']) > 0:
-                    resp_dict['message'] +=  ', '
-                resp_dict['message'] += '{} argument missing'.format(key)
+                if len(rsp_dict['message']) > 0:
+                    rsp_dict['message'] +=  ', '
+                rsp_dict['message'] += '{} argument missing'.format(key)
         if ok:
             self.autostep.move_to_sinusiod_start(param)
-            resp_dict['success'] = True
+            rsp_dict['success'] = True
         else:
-            resp_dict['success'] = False
-        return resp_dict
+            rsp_dict['success'] = False
+        return rsp_dict
 
 
     def on_set_move_mode_command(self,args_dict):
         ok = False
         mode = ''
-        resp_dict = {}
+        rsp_dict = {}
         try:
             mode = args_dict['mode']
-            resp_dict['success'] = True
-            resp_dict['message'] = ''
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
         except KeyError:
-            resp_dict['success'] = False
-            resp_dict['message'] = 'mode argument missing'
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'mode argument missing'
         if ok:
             if mode == 'max':
                 self.autostep.set_move_mode_max()
             elif mode == 'jog':
                 self.autostep.set_move_mode_jog()
             else:
-                resp_dict['success'] = False
-                resp_dict['message'] = "mode must be 'max' or 'jog'"
-        return resp_dict 
+                rsp_dict['success'] = False
+                rsp_dict['message'] = "mode must be 'max' or 'jog'"
+        return rsp_dict 
 
     def on_print_params_command(self,args_dict):
         self.autostep.print_params()
@@ -279,13 +293,13 @@ class AutostepNode(object):
         return {'success': True, 'message': '', 'params': params} 
 
     def on_run_trajectory_command(self, args_dict):
-        resp_dict = {}
+        rsp_dict = {}
         try:
             position = args_dict['position']
         except KeyError:
-            resp_dict['success'] = False
-            resp_dict['message'] = 'position (array) argument missing'
-            return resp_dict 
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'position (array) argument missing'
+            return rsp_dict 
 
         position = scipy.array(position)
         dt = Autostep.TrajectoryDt
