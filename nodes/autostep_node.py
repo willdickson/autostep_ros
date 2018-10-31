@@ -267,14 +267,15 @@ class AutostepNode(object):
             mode = args_dict['mode']
             rsp_dict['success'] = True
             rsp_dict['message'] = ''
+            ok = True
         except KeyError:
             rsp_dict['success'] = False
             rsp_dict['message'] = 'mode argument missing'
         if ok:
             if mode == 'max':
-                self.autostep.set_move_mode_max()
+                self.autostep.set_move_mode_to_max()
             elif mode == 'jog':
-                self.autostep.set_move_mode_jog()
+                self.autostep.set_move_mode_to_jog()
             else:
                 rsp_dict['success'] = False
                 rsp_dict['message'] = "mode must be 'max' or 'jog'"
