@@ -102,8 +102,19 @@ class AutostepProxy(object):
         command_name = 'set_move_mode'
         command_args = {'mode': mode} 
         rsp_dict = self.send_command(command_name, command_args)
-        print(rsp_dict)
         self.check_rsp_dict(rsp_dict)
+
+    def get_jog_mode_params(self):
+        pass
+
+    def set_jog_mode_params(self,params):
+        pass
+
+    def get_max_mode_params(self):
+        pass
+
+    def set_jog_mode_params(self,params):
+        pass
 
     def get_params(self):
         command_name = 'get_params'

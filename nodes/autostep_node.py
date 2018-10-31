@@ -64,6 +64,10 @@ class AutostepNode(object):
                 'set_position'            : self.on_set_position_command,
                 'get_position'            : self.on_get_position_command,
                 'set_move_mode'           : self.on_set_move_mode_command,
+                'get_jog_mode_params'     : self.on_get_jog_mode_params,
+                'set_jog_mode_params'     : self.on_set_job_mode_params,
+                'get_max_mode_params'     : self.on_get_max_mode_params,
+                'set_max_mode_params'     : self.on_set_max_mode_params,
                 'get_params'              : self.on_get_params_command,
                 'print_params'            : self.on_print_params_command,
                 'sinusoid'                : self.on_sinusoid_command,
@@ -237,7 +241,6 @@ class AutostepNode(object):
             rsp_dict['success'] = False
         return rsp_dict
 
-
     def on_move_to_sinusoid_start_command(self,args_dict):
         ok = True 
         param = {}
@@ -280,6 +283,22 @@ class AutostepNode(object):
                 rsp_dict['success'] = False
                 rsp_dict['message'] = "mode must be 'max' or 'jog'"
         return rsp_dict 
+
+    def on_get_jog_mode_params(self,args_dict):
+        rsp_dict = {}
+        return rsp_dict
+
+    def on_set_job_mode_params(self, args_dict):
+        rsp_dict = {}
+        return rsp_dict
+
+    def on_get_max_mode_params(self, args_dict):
+        rsp_dict = {}
+        return rsp_dict
+
+    def on_set_max_mode_params(self, args_dict):
+        rsp_dict = {}
+        return rsp_dict
 
     def on_print_params_command(self,args_dict):
         self.autostep.print_params()
@@ -387,6 +406,7 @@ class AutostepNode(object):
 
             elapsed_time = self.tracking_mode_last_update_t - self.tracking_mode_first_update_t
             self.motion_pub.publish(MotionData(header, elapsed_time, self.tracking_mode_position, predicted_position, 0.0))
+
 
 
     def run(self):
