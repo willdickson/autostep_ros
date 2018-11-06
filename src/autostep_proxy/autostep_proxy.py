@@ -22,7 +22,9 @@ class AutostepProxy(object):
 
     def __init__(self, namespace='autostep'):
         self.namespace = namespace
-        self.command_proxy = rospy.ServiceProxy('/{}/command'.format(self.namespace),Command)
+        service_name = '/{}/command'.format(self.namespace)
+        self.rospy.wait_for_service(service_name)
+        self.command_proxy = rospy.ServiceProxy(service_name,Command)
 
     def send_command(self,command_name, command_args=None):
         if command_args is None:
