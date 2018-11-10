@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import json
+import rospy
 import roslib
 import rospy
 import numpy
@@ -23,7 +24,7 @@ class AutostepProxy(object):
     def __init__(self, namespace='autostep'):
         self.namespace = namespace
         service_name = '/{}/command'.format(self.namespace)
-        self.rospy.wait_for_service(service_name)
+        rospy.wait_for_service(service_name)
         self.command_proxy = rospy.ServiceProxy(service_name,Command)
 
     def send_command(self,command_name, command_args=None):
