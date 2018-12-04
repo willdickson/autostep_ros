@@ -35,7 +35,17 @@ class AutostepNode(object):
         self.fullstep_per_rev = rospy.get_param('fullstep_per_rev', 200)
         self.gear_ratio = rospy.get_param('gear_ratio', 2.0)
         self.tracking_mode_gain = rospy.get_param('tracking_mode_gain', 5.0)
-        self.tracking_mode_absolute = rospy.get_param('tracking_mode_absolute', False)
+        self.tracking_mode_absolute = rospy.get_param('tracking_mode_absolute', True)
+        self.max_mode_params = rospy.get_param('max_mode_params', { 
+            'speed': 1000, 
+            'accel': 10000, 
+            'decel': 10000 
+            })
+        self.jog_mode_params = rospy.get_param('max_mode_params', { 
+            'speed': 400, 
+            'accel': 800, 
+            'decel': 800 
+            })
 
         # Tracking mode state data
         self.tracking_mode_is_first = False
@@ -64,7 +74,7 @@ class AutostepNode(object):
                 'set_position'            : self.on_set_position_command,
                 'get_position'            : self.on_get_position_command,
                 'set_move_mode'           : self.on_set_move_mode_command,
-                'get_jog_mode_params'     : self.on_get_jog_mode_params,
+                'get_jog_mode_params'     : self.on_get_job_mode_params,
                 'set_jog_mode_params'     : self.on_set_job_mode_params,
                 'get_max_mode_params'     : self.on_get_max_mode_params,
                 'set_max_mode_params'     : self.on_set_max_mode_params,
@@ -88,6 +98,8 @@ class AutostepNode(object):
         self.autostep.set_fullstep_per_rev(self.fullstep_per_rev)
         self.autostep.set_gear_ratio(self.gear_ratio)
         self.autostep.set_move_mode_to_jog()
+        self.autostep.set_jog_mode_params(self.jog_mode_params)
+        self.autostep.set_max_mode_params(self.max_mode_params)
         self.have_sensor = False
 
     def enable(self):
@@ -284,7 +296,7 @@ class AutostepNode(object):
                 rsp_dict['message'] = "mode must be 'max' or 'jog'"
         return rsp_dict 
 
-    def on_get_jog_mode_params(self,args_dict):
+    def on_get_job_mode_params(self,args_dict):
         rsp_dict = {}
         return rsp_dict
 
@@ -400,6 +412,8 @@ class AutostepNode(object):
                 self.tracking_mode_position = true_position
                 self.tracking_mode_velocity = new_velocity
                 self.tracking_mode_last_update_t = current_time
+
+                rospy.logwarn(position_error)
 
             header = std_msgs.msg.Header()
             header.stamp = rospy.Time.now()
