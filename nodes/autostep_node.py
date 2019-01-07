@@ -10,6 +10,7 @@ import scipy
 import scipy.interpolate
 
 from autostep import Autostep
+from autostep import AutostepException
 
 from autostep_ros.msg import MotionData
 from autostep_ros.msg import TrackingData
@@ -21,13 +22,6 @@ class AutostepNode(object):
 
 
     def __init__(self,port='/dev/ttyACM0'):
-
-        ## Parameters
-        #self.port = port
-        #self.step_mode = 'STEP_FS_128'
-        #self.fullstep_per_rev = 200
-        #self.gear_ratio = 2.0
-        #self.tracking_mode_gain = 5.0
 
         # Parameters
         self.port = rospy.get_param('port', '/dev/ttyACM0')
@@ -74,8 +68,8 @@ class AutostepNode(object):
                 'set_position'            : self.on_set_position_command,
                 'get_position'            : self.on_get_position_command,
                 'set_move_mode'           : self.on_set_move_mode_command,
-                'get_jog_mode_params'     : self.on_get_job_mode_params,
-                'set_jog_mode_params'     : self.on_set_job_mode_params,
+                'get_jog_mode_params'     : self.on_get_jog_mode_params,
+                'set_jog_mode_params'     : self.on_set_jog_mode_params,
                 'get_max_mode_params'     : self.on_get_max_mode_params,
                 'set_max_mode_params'     : self.on_set_max_mode_params,
                 'get_params'              : self.on_get_params_command,
@@ -296,20 +290,54 @@ class AutostepNode(object):
                 rsp_dict['message'] = "mode must be 'max' or 'jog'"
         return rsp_dict 
 
-    def on_get_job_mode_params(self,args_dict):
-        rsp_dict = {}
+    def on_get_jog_mode_params(self,args_dict):
+        jog_mode_params = self.autostep.get_jog_mode_params()
+        rsp_dict = {'success': True, 'message': '', 'params': jog_mode_params}
         return rsp_dict
 
-    def on_set_job_mode_params(self, args_dict):
+    def on_set_jog_mode_params(self, args_dict):
+        ok = False
         rsp_dict = {}
+        try:
+            jog_mode_params = args_dict['params']
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
+            ok = True
+        except KeyError:
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'position argument missing'
+        if ok:
+            try:
+                self.autostep.set_jog_mode_params(jog_mode_params)
+                self.jog_mode_params = jog_mode_params
+            except AutostepException:
+                rsp_dict['success'] = False
+                rsp_dict['message'] = 'setting jog mode parameters failed'
         return rsp_dict
 
     def on_get_max_mode_params(self, args_dict):
-        rsp_dict = {}
+        max_mode_params = self.autostep.get_max_mode_params()
+        rsp_dict = {'success': True, 'message': '', 'params': max_mode_params}
         return rsp_dict
 
     def on_set_max_mode_params(self, args_dict):
+        ok = False
         rsp_dict = {}
+        try:
+            max_mode_params = args_dict['params']
+            rsp_dict['success'] = True
+            rsp_dict['message'] = ''
+            ok = True
+        except KeyError:
+            rsp_dict['success'] = False
+            rsp_dict['message'] = 'position argument missing'
+        if ok:
+            try:
+                self.autostep.set_max_mode_params(max_mode_params)
+                self.max_mode_params = max_mode_params
+            except AutostepException:
+                rsp_dict['success'] = False
+                rsp_dict['message'] = 'setting max mode parameters failed'
         return rsp_dict
 
     def on_print_params_command(self,args_dict):

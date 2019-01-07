@@ -12,7 +12,7 @@ from autostep_ros.msg import TrackingData
 autostep = AutostepProxy()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print()
     print('* testing run command')
     autostep.set_move_mode('jog')
@@ -24,7 +24,7 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing enable/release commands')
     dt = 2.0
     print('  releasing for  {} secs ...'.format(dt), end='')
@@ -37,7 +37,7 @@ if True:
     print()
 
 # ----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing move_to command')
     autostep.set_move_mode('jog')
     pos_list = [0, 5, 10, 20, 45, 90, 180, 360, -360, 0]
@@ -50,7 +50,7 @@ if True:
     print()
 
 # ----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing move_by command')
     autostep.set_move_mode('jog')
     pos_list = [0, 1, 2, 3, 4, 5, 10, 20, 45, 90, 180, 360, 0]
@@ -66,7 +66,7 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing soft_stop command')
     vel = 100.0
     print('  running at vel = {}'.format(vel))
@@ -80,7 +80,7 @@ if True:
     print()
     
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing set_position command')
     position_list  = [123.0, 0.0]
     for new_position in position_list:
@@ -91,14 +91,14 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing get_position command')
     position = autostep.get_position()
     print('  position = {}'.format(position))
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing set move mode')
     print('  setting to max')
     autostep.set_move_mode('max')
@@ -114,13 +114,13 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing print_params')
     autostep.print_params()
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing sinusoid')
     sys.stdout.flush()
     for amplitude in [10, 20, 40, 80]:
@@ -143,7 +143,7 @@ if True:
     autostep.busy_wait()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing run_trajectory')
     print('  running ... ', end='')
     sys.stdout.flush()
@@ -168,7 +168,7 @@ if True:
 
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing enable/disable tracking mode')
     print('  enabling')
     autostep.enable_tracking_mode()
@@ -176,3 +176,53 @@ if True:
     print('  disabling')
     autostep.disable_tracking_mode()
 
+
+# ------------------------------------------------------------------------------
+if True:
+    print('* testing get_jog_mode_params')
+    params = autostep.get_jog_mode_params()
+    print('  params = {}'.format(params))
+    print()
+
+
+# ------------------------------------------------------------------------------
+if True:
+    print('* testing set_jog_mode_params')
+    orig_params = autostep.get_jog_mode_params()
+    print('  (recv)  orig_params = {}'.format(params))
+
+    new_params = {'speed': 500, 'accel': 900, 'decel': 900}
+    print('  (sent)  new_params = {}'.format(new_params))
+    autostep.set_jog_mode_params(new_params)
+    tmp_params = autostep.get_jog_mode_params()
+    print('  (recv)  new_params = {}'.format(tmp_params))
+
+    autostep.set_jog_mode_params(orig_params)
+    tmp_params = autostep.get_jog_mode_params()
+    print('  (reset) orig_params = {}'.format(tmp_params))
+    print()
+
+# ------------------------------------------------------------------------------
+if True:
+    print('* testing get_max_mode_params')
+    params = autostep.get_max_mode_params()
+    print('  params = {}'.format(params))
+    print()
+
+
+# ------------------------------------------------------------------------------
+if True:
+    print('* testing set_max_mode_params')
+    orig_params = autostep.get_max_mode_params()
+    print('  (recv)  orig_params = {}'.format(params))
+
+    new_params = {'speed': 1100, 'accel': 11000, 'decel': 11000}
+    print('  (sent)  new_params = {}'.format(new_params))
+    autostep.set_max_mode_params(new_params)
+    tmp_params = autostep.get_max_mode_params()
+    print('  (recv)  new_params = {}'.format(tmp_params))
+
+    autostep.set_max_mode_params(orig_params)
+    tmp_params = autostep.get_max_mode_params()
+    print('  (reset) orig_params = {}'.format(tmp_params))
+    print()

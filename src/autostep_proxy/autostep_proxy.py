@@ -108,16 +108,30 @@ class AutostepProxy(object):
         self.check_rsp_dict(rsp_dict)
 
     def get_jog_mode_params(self):
-        pass
+        command_name = 'get_jog_mode_params'
+        command_args = None
+        rsp_dict = self.send_command(command_name, command_args)
+        self.check_rsp_dict(rsp_dict)
+        return rsp_dict['params']
 
     def set_jog_mode_params(self,params):
-        pass
+        command_name = 'set_jog_mode_params'
+        command_args = {'params': params}
+        rsp_dict = self.send_command(command_name, command_args)
+        self.check_rsp_dict(rsp_dict)
 
     def get_max_mode_params(self):
-        pass
+        command_name = 'get_max_mode_params'
+        command_args = None
+        rsp_dict = self.send_command(command_name, command_args)
+        self.check_rsp_dict(rsp_dict)
+        return rsp_dict['params']
 
-    def set_jog_mode_params(self,params):
-        pass
+    def set_max_mode_params(self,params):
+        command_name = 'set_max_mode_params'
+        command_args = {'params': params}
+        rsp_dict = self.send_command(command_name, command_args)
+        self.check_rsp_dict(rsp_dict)
 
     def get_params(self):
         command_name = 'get_params'
