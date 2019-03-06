@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 import sys
 import time
@@ -12,7 +11,7 @@ from autostep_ros.msg import TrackingData
 autostep = AutostepProxy()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print()
     print('* testing run command')
     autostep.set_move_mode('jog')
@@ -24,7 +23,7 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing enable/release commands')
     dt = 2.0
     print('  releasing for  {} secs ...'.format(dt), end='')
@@ -37,7 +36,7 @@ if True:
     print()
 
 # ----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing move_to command')
     autostep.set_move_mode('jog')
     pos_list = [0, 5, 10, 20, 45, 90, 180, 360, -360, 0]
@@ -50,7 +49,7 @@ if True:
     print()
 
 # ----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing move_by command')
     autostep.set_move_mode('jog')
     pos_list = [0, 1, 2, 3, 4, 5, 10, 20, 45, 90, 180, 360, 0]
@@ -66,7 +65,7 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing soft_stop command')
     vel = 100.0
     print('  running at vel = {}'.format(vel))
@@ -80,7 +79,7 @@ if True:
     print()
     
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing set_position command')
     position_list  = [123.0, 0.0]
     for new_position in position_list:
@@ -91,14 +90,14 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing get_position command')
     position = autostep.get_position()
     print('  position = {}'.format(position))
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing set move mode')
     print('  setting to max')
     autostep.set_move_mode('max')
@@ -107,23 +106,24 @@ if True:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing get_params')
     params = autostep.get_params()
     print(params)
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing print_params')
     autostep.print_params()
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing sinusoid')
     sys.stdout.flush()
-    for amplitude in [10, 20, 40, 80]:
+    #for amplitude in [10, 20, 40, 80]:
+    for amplitude in [30, 40]:
         print('  amplitude = {}'.format(amplitude))
         param = { 
                 'amplitude': amplitude,
@@ -145,30 +145,34 @@ if True:
 # -----------------------------------------------------------------------------
 if True:
     print('* testing run_trajectory')
-    print('  running ... ', end='')
-    sys.stdout.flush()
-    # Create trajectory
-    dt = AutostepProxy.TrajectoryDt
-    num_cycle = 4
-    period = 3.0
-    num_pts = int(period*num_cycle/dt)
-    t = dt*scipy.arange(num_pts)
-    position = 80*scipy.cos(2.0*scipy.pi*t/period) - 50*scipy.cos(4.0*scipy.pi*t/period)
+    num_trajectory = 3
+    for i in range(num_trajectory):
+        print('  running {}/{}'.format(i+1,num_trajectory))
+        sys.stdout.flush()
+        # Create trajectory
+        dt = AutostepProxy.TrajectoryDt
+        num_cycle = 2
+        period = 3.0
+        num_pts = int(period*num_cycle/dt)
+        t = dt*scipy.arange(num_pts)
+        position = 80*scipy.cos(2.0*scipy.pi*t/period) - 50*scipy.cos(4.0*scipy.pi*t/period)
 
-    autostep.move_to(position[0])
-    autostep.busy_wait()
-    time.sleep(1.0)
+        autostep.move_to(position[0])
+        autostep.busy_wait()
+        time.sleep(1.0)
 
-    autostep.run_trajectory(position)
-    autostep.busy_wait()
-    print('done')
-    time.sleep(1.0)
-    autostep.move_to(0.0)
+        autostep.run_trajectory(position)
+        autostep.busy_wait()
+        time.sleep(1.0)
+        if autostep.was_stopped():
+            print('  trajectory stopped!')
+            break
+        autostep.move_to(0.0)
     print()
 
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing enable/disable tracking mode')
     print('  enabling')
     autostep.enable_tracking_mode()

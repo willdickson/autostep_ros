@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="autostep_ros" name="autostep" type="autostep_node.py" ns="autostep">
+    </node>
+    <node pkg="autostep_ros" name="autostep_proxy_app" type="autostep_proxy_app.py" ns="autostep">
+    </node>
+</launch>

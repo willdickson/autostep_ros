@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="autostep_ros" name="autostep_proxy_app" type="autostep_proxy_app.py" ns="autostep">
+    </node>
+</launch>

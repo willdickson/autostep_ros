@@ -22,7 +22,9 @@ class AutostepProxy(object):
 
     def __init__(self, namespace='autostep'):
         self.namespace = namespace
-        self.command_proxy = rospy.ServiceProxy('/{}/command'.format(self.namespace),Command)
+        self.service_path = '/{}/command'.format(self.namespace)
+        rospy.wait_for_service(self.service_path)
+        self.command_proxy = rospy.ServiceProxy(self.service_path,Command)
 
     def send_command(self,command_name, command_args=None):
         if command_args is None:
@@ -63,6 +65,13 @@ class AutostepProxy(object):
         rsp_dict = self.send_command(command_name, command_args)
         self.check_rsp_dict(rsp_dict)
         return rsp_dict['is_busy']
+
+    def was_stopped(self):
+        command_name = 'was_stopped'
+        command_args = None
+        rsp_dict = self.send_command(command_name, command_args)
+        self.check_rsp_dict(rsp_dict)
+        return rsp_dict['was_stopped']
 
     def busy_wait(self):
         while self.is_busy():
