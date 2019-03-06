@@ -62,6 +62,7 @@ class AutostepNode(object):
                 'enable'                  : self.on_enable_command,
                 'release'                 : self.on_release_command,
                 'is_busy'                 : self.on_is_busy_command,
+                'was_stopped'             : self.on_was_stopped_command,
                 'move_to'                 : self.on_move_to_command,
                 'move_by'                 : self.on_move_by_command,
                 'soft_stop'               : self.on_soft_stop_command,
@@ -85,6 +86,7 @@ class AutostepNode(object):
         self.lock = threading.Lock()
         self.tracking_mode_enabled = False
         self.running_motion_cmd = False
+        self.stopped_flag = False
 
     def initialize(self):
         self.autostep = Autostep(self.port)
@@ -122,6 +124,7 @@ class AutostepNode(object):
         return CommandResponse(json.dumps(rsp_dict))
 
     def on_run_command(self,args_dict):
+        self.stopped_flag = False
         ok = False
         velocity = 0.0
         rsp_dict = {}
@@ -146,6 +149,7 @@ class AutostepNode(object):
         return {'success': True, 'message': ''}
 
     def on_move_to_command(self,args_dict):
+        self.stopped_flag = False
         ok = False
         position = 0.0
         rsp_dict = {}
@@ -162,6 +166,7 @@ class AutostepNode(object):
         return rsp_dict
 
     def on_move_by_command(self, args_dict):
+        self.stopped_flag = False
         ok = False
         position = 0.0
         rsp_dict = {}
@@ -178,6 +183,10 @@ class AutostepNode(object):
         return rsp_dict
 
     def on_soft_stop_command(self,args_dict):
+        self.stopped_flag = True 
+        with self.lock:
+            self.tracking_mode_enabled = False
+            self.running_motion_cmd = False
         self.autostep.soft_stop()
         return {'success': True, 'message': ''}
 
@@ -187,6 +196,9 @@ class AutostepNode(object):
             return {'success': True,'message': '','is_busy': True}
         else:
             return {'success': True,'message': '','is_busy': False}
+
+    def on_was_stopped_command(self,args_dict):
+        return {'success': True, 'message': '', 'was_stopped': self.stopped_flag}
 
     def on_get_position_command(self,args_dict):
         position = self.autostep.get_position()
@@ -209,6 +221,7 @@ class AutostepNode(object):
         return rsp_dict
 
     def on_sinusoid_command(self,args_dict):
+        self.stopped_flag = False 
         ok = True 
         param = {}
         rsp_dict = {'message': ''}
@@ -353,6 +366,7 @@ class AutostepNode(object):
         return {'success': True, 'message': '', 'params': params} 
 
     def on_run_trajectory_command(self, args_dict):
+        self.stopped_flag = False 
         rsp_dict = {}
         try:
             position = args_dict['position']
@@ -394,6 +408,7 @@ class AutostepNode(object):
         return {'success': True,'message': ''}
 
     def on_enable_tracking_mode_command(self, args_dict):
+        self.stopped_flag = False 
         with self.lock:
             self.autostep.run(0.0)
             self.autostep.set_move_mode_to_max()

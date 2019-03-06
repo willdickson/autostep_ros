@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from __future__ import print_function
 import sys
 import time
@@ -107,7 +106,7 @@ if False:
     print()
 
 # -----------------------------------------------------------------------------
-if True:
+if False:
     print('* testing get_params')
     params = autostep.get_params()
     print(params)
@@ -123,7 +122,8 @@ if False:
 if False:
     print('* testing sinusoid')
     sys.stdout.flush()
-    for amplitude in [10, 20, 40, 80]:
+    #for amplitude in [10, 20, 40, 80]:
+    for amplitude in [30, 40]:
         print('  amplitude = {}'.format(amplitude))
         param = { 
                 'amplitude': amplitude,
@@ -145,25 +145,29 @@ if False:
 # -----------------------------------------------------------------------------
 if False:
     print('* testing run_trajectory')
-    print('  running ... ', end='')
-    sys.stdout.flush()
-    # Create trajectory
-    dt = AutostepProxy.TrajectoryDt
-    num_cycle = 4
-    period = 3.0
-    num_pts = int(period*num_cycle/dt)
-    t = dt*scipy.arange(num_pts)
-    position = 80*scipy.cos(2.0*scipy.pi*t/period) - 50*scipy.cos(4.0*scipy.pi*t/period)
+    num_trajectory = 3
+    for i in range(num_trajectory):
+        print('  running {}/{}'.format(i+1,num_trajectory))
+        sys.stdout.flush()
+        # Create trajectory
+        dt = AutostepProxy.TrajectoryDt
+        num_cycle = 2
+        period = 3.0
+        num_pts = int(period*num_cycle/dt)
+        t = dt*scipy.arange(num_pts)
+        position = 80*scipy.cos(2.0*scipy.pi*t/period) - 50*scipy.cos(4.0*scipy.pi*t/period)
 
-    autostep.move_to(position[0])
-    autostep.busy_wait()
-    time.sleep(1.0)
+        autostep.move_to(position[0])
+        autostep.busy_wait()
+        time.sleep(1.0)
 
-    autostep.run_trajectory(position)
-    autostep.busy_wait()
-    print('done')
-    time.sleep(1.0)
-    autostep.move_to(0.0)
+        autostep.run_trajectory(position)
+        autostep.busy_wait()
+        time.sleep(1.0)
+        if autostep.was_stopped():
+            print('  trajectory stopped!')
+            break
+        autostep.move_to(0.0)
     print()
 
 

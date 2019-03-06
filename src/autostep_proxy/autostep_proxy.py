@@ -67,6 +67,13 @@ class AutostepProxy(object):
         self.check_rsp_dict(rsp_dict)
         return rsp_dict['is_busy']
 
+    def was_stopped(self):
+        command_name = 'was_stopped'
+        command_args = None
+        rsp_dict = self.send_command(command_name, command_args)
+        self.check_rsp_dict(rsp_dict)
+        return rsp_dict['was_stopped']
+
     def busy_wait(self):
         while self.is_busy():
             time.sleep(self.BusyWaitDt)
