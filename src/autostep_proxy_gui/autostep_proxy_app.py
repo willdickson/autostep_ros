@@ -190,7 +190,7 @@ class AutostepProxyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
 def app_main():
     app = QtWidgets.QApplication(sys.argv)
-    app.setStyleSheet("QGroupBox {  border: 1px solid lightgray;}")
+    #app.setStyleSheet("QGroupBox {background-color: #EEEEEE;}")
     mainWindow = AutostepProxyApp()
     mainWindow.show()
     app.exec_()
