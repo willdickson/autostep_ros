@@ -456,7 +456,7 @@ class AutostepNode(object):
                 self.tracking_mode_velocity = new_velocity
                 self.tracking_mode_last_update_t = current_time
 
-                rospy.logwarn(position_error)
+                #rospy.logwarn(position_error)
 
             header = std_msgs.msg.Header()
             header.stamp = rospy.Time.now()
