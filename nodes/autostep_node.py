@@ -25,7 +25,7 @@ class AutostepNode(object):
 
         # Parameters
         self.port = rospy.get_param('port', '/dev/ttyACM0')
-        self.step_mode= rospy.get_param('step_mode', 'STEP_FS_128')
+        self.step_mode= rospy.get_param('step_mode', 'STEP_FS_16')
         self.fullstep_per_rev = rospy.get_param('fullstep_per_rev', 200)
         self.gear_ratio = rospy.get_param('gear_ratio', 2.0)
         self.tracking_mode_gain = rospy.get_param('tracking_mode_gain', 5.0)
